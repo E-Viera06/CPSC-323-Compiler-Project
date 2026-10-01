@@ -25,11 +25,15 @@ class Lexer {
 		Token lex(); // This is will be the main function of this class
 
 	private:
-		const vector<string> Keywords = { "function", "integer", "boolean", "real", "if", "else", "fi", "return", "put", "get", "while", "true", "false"};
+		const vector<string> Keywords = { "function", "integer", "boolean", "real", "if", "else", "fi", 
+										  "return", "put", "get", "while", "true", "false"};
+
 		const vector<string> Operators = { "==", "!=", "<=", ">=", ">", "<", "=", "+", "-", "*", "/" };
+
 		const vector<string> Separators = { "(", ")", "{", "}", "[", "]", ";", ",", "@"};
 
-		bool isAKeyWord() {}; // Work on later, function to check if the indentifier is inside keywords 
+		bool isAKeyWord(const string& identifier); // Work on later, function to check if the indentifier is inside keywords 
+
 	ifstream SourceFile;
 };
 
