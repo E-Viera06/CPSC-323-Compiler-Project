@@ -1,29 +1,14 @@
 #include <iostream>
 #include <string>
+#include <fstream>
+#include "Lexer.h"
 using namespace std;
-string InputString;
-char CurrentChar;
 
-void IndentifierDFSm() {
-	cout << "Indentifier Found";
-}
-
-void IntAndRealDFSM() {
-	cout << "Number Found";
-}
-
-void Lexer() {
-	char FirstCharinToken = cin.get();
-	if (isalpha(FirstCharinToken)) {
-		IndentifierDFSm();
-	} else if(isdigit(FirstCharinToken)) {
-		IntAndRealDFSM();
-	}
-}
 
 int main() {
 	cout << "Enter something:";
 	Lexer();
 }
-
-
+/*
+ This will be the last thing to work on since main.cpp will be where the Lexer() will produce the tokens for outputting
+*/
