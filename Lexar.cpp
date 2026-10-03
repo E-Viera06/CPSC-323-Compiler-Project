@@ -1,6 +1,8 @@
 #include "Lexer.h"
 #include <string>
 #include <iostream>
+#include <cctype>
+#include <cstudio>
 using namespace std;
 
 Lexer::Lexer() {};// Default Constructor
@@ -174,5 +176,114 @@ Token RealNumDFSM(const string& input) { // This function will use the DFSM for 
 vector<Token> Lexer::lex() {
 	vector<Token> tokens;
 
+	if (!SourceFile.is_open()) { //checks for files to open
+		return tokens;
+	}
+
+	while (true) {
+
+		int next = SourceFile.peek(); //end of file check
+		if (next == EOF) {
+			break;
+		}
+		char c = static_cast<char>(next);
+
+		if (isspace(static_cast<unsigned char>(c))) { //checks for space
+			SourceFile.get();
+			continue;
+		}
+
+		if (c =='!') { //checks for comments
+			SourceFile.get();
+			if (SourceFile.peek() == '=') {
+				SourceFile.unget();
+			}
+			else {
+				int ch = SourceFile.get();
+				while (ch != EOF && ch != '!') {
+					ch = SourceFile.get();
+				}
+				if (ch == EOF) {
+					Token token;
+					token.TokenType = "Invalid";
+					token.lexeme = "unterminated comment";
+					tokens.push_back(token);
+				}
+				continue;
+			}
+		}
+
+		if (isalpha(static_cast<unsigned char>(c))) { //checks for alphabet characters
+			string word = "";
+			while (true) {
+				int n = SourceFile.peek();
+				if (n == EOF) {
+					break;
+				}
+				unsigned char uc = static_cast<unsigned char>(n);
+				if (isalpha(uc) || isdigit(uc) || n == '_') {
+					word += static_cast<char>(SourceFile.get());
+				}
+				else {
+					break;
+				}
+			
+			}
+			Token token = IdentifierDFSM(word); 
+
+			if (isAKeyWord(word)) {             
+				token.TokenType = "Keyword";
+			}
+
+			tokens.push_back(token);
+			continue;
+		}
+
+		
+		if (isdigit(static_cast<unsigned char>(c)) || c == '.') { // checks for real number
+			string number = "";
+			bool isReal = false;
+
+			while (isdigit(SourceFile.peek())) {
+				number += static_cast<char>(SourceFile.get());
+			}
+
+			if (SourceFile.peek() == '.') {
+				SourceFile.get();                   
+				if (isdigit(SourceFile.peek())) {    
+					isReal = true;
+					number += '.';
+					while (isdigit(SourceFile.peek())) {
+						number += static_cast<char>(SourceFile.get());
+					}
+				}
+				else if (number.empty()) {    
+					isReal = true;      
+					number = ".";
+				}
+				else {
+					SourceFile.unget();      
+				}
+			}
+
+			Token token;
+			if (isReal) {
+				token = RealNumDFSM(number);   
+			}
+			else {
+				token = IntDFSM(number);
+			}
+			tokens.push_back(token);
+			continue;
+		}
+		//unfinished. intended for operators and seperators
+		SourceFile.get();
+		Token token;
+		token.TokenType = "";
+		token.lexeme = string(1, c);
+		tokens.push_back(token);
+
+	}
+	
 	return tokens;
 };
