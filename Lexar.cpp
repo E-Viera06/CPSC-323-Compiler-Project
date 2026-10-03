@@ -2,7 +2,8 @@
 #include <string>
 #include <iostream>
 #include <cctype>
-#include <cstudio>
+#include <cstdio>
+
 using namespace std;
 
 Lexer::Lexer() {};// Default Constructor
@@ -38,17 +39,15 @@ bool Lexer::isAKeyWord(const string& identifier) { // This function will check i
 
 int Identifier_char_col(char c) {
 	if (isalpha(c)) {
-		return 3; // Column 1 for letters
+		return 0; // Column 1 for letters
 	}
 	else if (isdigit(c)) {
-		return 4; // Column 2 for digits
+		return 1; // Column 2 for digits
 	}
 	else if (c == '_') {
-		return 5; // Column 3 for underscore
+		return 2; // Column 3 for underscore
 	}
-	else {
-		return 6; // Invalid character
-	}
+	else return -1; // Invalid character
 }
 
 Token IdentifierDFSM(const string& input) { // This function will use the DFSM for L(L| D | '_')* // First design of DFSM for identifiers
@@ -60,21 +59,22 @@ Token IdentifierDFSM(const string& input) { // This function will use the DFSM f
 	{ 3,4,5 },
 	{ 6,6,6 },};
 
-	int current_state = 1;
-	const int AcceptingStates[4] = {2, 3, 4, 5};
-	for (int i = 1; i < input.length(); ++i) { // Main Loop
-		if (isdigit(input[0])) {
-			current_state = 6; // Invalid state if the first character is a digit
+	int current_state = 0;
+	const int AcceptingStates[4] = {1, 2, 3, 4};
+	for (int i = 0; i < input.length(); ++i) { // Main Loop
+		
+		int column = Identifier_char_col(input[i]);
+		if (column == -1) { // Invalid character
+			current_state = 5; // Set to invalid state
 			break;
 		}
-		int column = Identifier_char_col(input[i]);
-		current_state = array[current_state][column];
+		current_state = (array[current_state][column]-1);
 
-		if (current_state == 6) {
+		if (current_state == 5) {
 			break;}	
 	} // Need to an a check if the token is part of keyword
 
-	bool isAcceptingState = (current_state >= 2 && current_state <= 5);
+	bool isAcceptingState = (current_state >= 1 && current_state <= 4);
 
 	if (isAcceptingState) {
 		Token token;
@@ -92,29 +92,29 @@ Token IdentifierDFSM(const string& input) { // This function will use the DFSM f
 
 int Int_char_col(char c) {
 	if (isdigit(c)) {
-		return 2; // Column 2 for digits
+		return 0; // Column 1 for digits
 	}
-	else {
-		return -1; // Invalid character
-	}
+	else
+		return -1; // invalid character
 }
 
 Token IntDFSM(const string& input) { // This function will use the DFSM for d+
 	int states_array[2][1] = {
-	{2},
-	{2},
-	};
-	int InitialState = 1, AcceptingState = 2;
-	bool isAcceptingState = false;
-	for (int i = 1; i < input.length(); ++i) { // Main Loop
+							{2},
+							{2}, }; // 1 = 2 because column 0 is the only column for digits and 1 is the only accepting state
+
+	int Current_State = 0, AcceptingState = 1;
+	for (int i = 0; i < input.length(); ++i) { // Main Loop
 
 		int column = Int_char_col(input[i]);
-		int state = states_array[InitialState][column];
-		if (state == 6) {
-			isAcceptingState = false;
+		if (column == -1) { // Invalid character
+			Current_State = -1; // Set to invalid state
+			break;
 		}
-		else { isAcceptingState = true; }
+		Current_State = (states_array[Current_State][column] - 1);
 	}
+	bool isAcceptingState = (Current_State == AcceptingState);
+
 	if (isAcceptingState) {
 		Token token;
 		token.TokenType = "Integer";
@@ -131,34 +131,33 @@ Token IntDFSM(const string& input) { // This function will use the DFSM for d+
 
 int RealNum_char_col(char c) {
 	if (isdigit(c)) {
-		return 2; // Column 2 for digits
+		return 0; // Column 0 for digits
 	}
 	else if (c == '.') {
-		return 3; // Column 3 for decimal point
+		return 1; // Column 1 for decimal point
 	}
 	else {
-		return 5; // Invalid character
+		return -1; // Invalid character
 	}
 }
 
 Token RealNumDFSM(const string& input) { // This function will use the DFSM for d+.d+
 	int state_array[5][2] = {
+		{2,3}, // 0 = state 1, 1 = state 2, 2 = state 3, 3 = state 4, 4 = state 5
 		{2,3},
-		{2,3},
+		{3,5},
 		{4,5},
-		{4,5},
-		{5,5},},
-		AcceptingState = 4, IntitialState = 1;\
-	bool isAcceptingState = false;
-	for (int i = 1; i < input.length(); ++i) { // Main Loop
+		{5,5},}, AcceptingState = 2, CurrentState = 0;
+	for (int i = 0; i < input.length(); ++i) { // Main Loop
 
 		int column = RealNum_char_col(input[i]);
-		int state = state_array[IntitialState][column];
-		if (state == 5) {
-			isAcceptingState = false;
+		if (column == -1) { // Invalid character
+			CurrentState = 4; // Set to invalid state
+			break;
 		}
-		else { isAcceptingState = true; }
+		CurrentState = (state_array[CurrentState][column] - 1);
 	}
+	bool isAcceptingState = (CurrentState == AcceptingState);
 	if (isAcceptingState) {
 		Token token;
 		token.TokenType = "RealNumber";
@@ -193,7 +192,7 @@ vector<Token> Lexer::lex() {
 			continue;
 		}
 
-		if (c =='!') { //checks for comments
+		if (c == '!') { //checks for comments
 			SourceFile.get();
 			if (SourceFile.peek() == '=') {
 				SourceFile.unget();
@@ -227,11 +226,11 @@ vector<Token> Lexer::lex() {
 				else {
 					break;
 				}
-			
-			}
-			Token token = IdentifierDFSM(word); 
 
-			if (isAKeyWord(word)) {             
+			}
+			Token token = IdentifierDFSM(word);
+
+			if (isAKeyWord(word)) {
 				token.TokenType = "Keyword";
 			}
 
@@ -239,7 +238,7 @@ vector<Token> Lexer::lex() {
 			continue;
 		}
 
-		
+
 		if (isdigit(static_cast<unsigned char>(c)) || c == '.') { // checks for real number
 			string number = "";
 			bool isReal = false;
@@ -249,26 +248,26 @@ vector<Token> Lexer::lex() {
 			}
 
 			if (SourceFile.peek() == '.') {
-				SourceFile.get();                   
-				if (isdigit(SourceFile.peek())) {    
+				SourceFile.get();
+				if (isdigit(SourceFile.peek())) {
 					isReal = true;
 					number += '.';
 					while (isdigit(SourceFile.peek())) {
 						number += static_cast<char>(SourceFile.get());
 					}
 				}
-				else if (number.empty()) {    
-					isReal = true;      
+				else if (number.empty()) {
+					isReal = true;
 					number = ".";
 				}
 				else {
-					SourceFile.unget();      
+					SourceFile.unget();
 				}
 			}
 
 			Token token;
 			if (isReal) {
-				token = RealNumDFSM(number);   
+				token = RealNumDFSM(number);
 			}
 			else {
 				token = IntDFSM(number);
@@ -284,6 +283,6 @@ vector<Token> Lexer::lex() {
 		tokens.push_back(token);
 
 	}
-	
+
 	return tokens;
 };
