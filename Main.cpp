@@ -6,9 +6,15 @@ using namespace std;
 
 
 int main() {
-	cout << "Enter something:";
-	Lexer();
+	cout << "Printing Tokens:" << endl;
+	Lexer Lexer1("TestCase1.txt");
+
+	vector<Token> Tokens = Lexer1.lex();
+	for (const auto& token : Tokens) {
+		cout << "Token Type: " << token.TokenType << " Lexeme: " << token.lexeme << endl;
+	}
 }
+
 /*
- This will be the last thing to work on since main.cpp will be where the Lexer() will produce the tokens for outputting
+ Current Test: while (fahr <= upper) a = 23.00; ! this is a sample !
 */

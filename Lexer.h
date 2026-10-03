@@ -32,9 +32,9 @@ class Lexer {
 
 		const vector<string> Separators = { "(", ")", "{", "}", "[", "]", ";", ",", "@"};
 
-		bool isAKeyWord(const string& identifier); // Work on later, function to check if the indentifier is inside keywords 
-
+		bool isAKeyWord(const string& identifier);
+		bool isAOperator(const string& input);
+		bool isSeparator(const string& input);
 	ifstream SourceFile;
 };
-
 #endif 

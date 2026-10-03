@@ -36,7 +36,18 @@ bool Lexer::isAKeyWord(const string& identifier) { // This function will check i
 	}
 	return false;
 };
-
+bool Lexer::isAOperator(const string& input) {
+	for (const auto& op : Operators) {
+		if (input == op) return true;
+	}
+	return false;
+}
+bool Lexer::isSeparator(const string& input) {
+	for (const auto& sp : Separators) {
+		if (input == sp) return true;
+	}
+	return false;
+}
 int Identifier_char_col(char c) {
 	if (isalpha(c)) {
 		return 0; // Column 1 for letters
@@ -72,10 +83,9 @@ Token IdentifierDFSM(const string& input) { // This function will use the DFSM f
 
 		if (current_state == 5) {
 			break;}	
-	} // Need to an a check if the token is part of keyword
+	}
 
 	bool isAcceptingState = (current_state >= 1 && current_state <= 4);
-
 	if (isAcceptingState) {
 		Token token;
 		token.TokenType = "Identifier";
@@ -267,17 +277,21 @@ vector<Token> Lexer::lex() {
 				while (SourceFile.peek() != EOF && isdigit(static_cast<unsigned char>(SourceFile.peek()))) {
 					number += static_cast<char>(SourceFile.get());
 				}
+				// This section is to check if input like 1.N is passed into real it will count it as invalid
 				if (SourceFile.peek() == '.') {
-					SourceFile.get(); // Consume '.'
-					if (SourceFile.peek() != EOF && isdigit(static_cast<unsigned char>(SourceFile.peek()))) {
-						isReal = true;
-						number += '.';
-						while (SourceFile.peek() != EOF && isdigit(static_cast<unsigned char>(SourceFile.peek()))) {
-							number += static_cast<char>(SourceFile.get());
-						}
+					SourceFile.get();
+					isReal = true;
+					number += '.';
+
+						while (SourceFile.peek() != EOF) {
+							int n = SourceFile.peek();
+							unsigned char UC = static_cast<unsigned char>(n);
+							if (isalnum(UC) || n == '.') {
+								number += static_cast<char>(SourceFile.get());
+						} else {
+								break;
 					}
-					else {
-						SourceFile.unget();
+					
 					}
 				}
 			}
@@ -291,11 +305,38 @@ vector<Token> Lexer::lex() {
 			tokens.push_back(token);
 			continue;
 		}
-		//unfinished. intended for operators and seperators
+		// Operator and Separator Checks
 		SourceFile.get();
+		string singleChar(1, c);
+		int nextchar = SourceFile.peek();
+		if (nextchar != EOF) {
+			string doubleChar = singleChar + static_cast<char>(nextchar);
+			if (isAOperator(doubleChar)) {
+				SourceFile.get();
+				Token token;
+				token.TokenType = "Operator";
+				token.lexeme = doubleChar;
+				tokens.push_back(token);
+				continue;
+			}
+		}
+		if (isAOperator(singleChar)) {
+			Token token;
+			token.TokenType = "Operator";
+			token.lexeme = singleChar;
+			tokens.push_back(token);
+			continue;
+		}
+		if (isSeparator(singleChar)) {
+			Token token;
+			token.TokenType = "Separator";
+			token.lexeme = singleChar;
+			tokens.push_back(token);
+			continue;
+		}
 		Token token;
-		token.TokenType = "";
-		token.lexeme = string(1, c);
+		token.TokenType = "Invalid";
+		token.lexeme = singleChar;
 		tokens.push_back(token);
 	}
 	return tokens;
