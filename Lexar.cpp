@@ -1,40 +1,178 @@
-#ifndef LEXER_H
-#define LEXER_H
-#include <iostream>
+#include "Lexer.h"
 #include <string>
-#include <vector>
-#include <fstream>
-
+#include <iostream>
 using namespace std;
-// Token Record
-struct Token {
-	string TokenType;
-	string lexeme;
+
+Lexer::Lexer() {};// Default Constructor
+
+Lexer::~Lexer() {};
+
+Lexer::Lexer(const string& filename) { // Explicit Constructor with filename
+	openFile(filename);
 };
 
-class Lexer {
-	public:
-		Lexer();
-		Lexer(const string& filename); // Constructor with filename
-		~Lexer(); // Destructor
-
-		// Functions for File Management
-		bool openFile(const string& filename);
-		void closeFile();
-		
-		vector<Token> lex(); // This is will be the main function of this class
-
-	private:
-		const vector<string> Keywords = { "function", "integer", "boolean", "real", "if", "else", "fi", 
-										  "return", "put", "get", "while", "true", "false"};
-
-		const vector<string> Operators = { "==", "!=", "<=", ">=", ">", "<", "=", "+", "-", "*", "/" };
-
-		const vector<string> Separators = { "(", ")", "{", "}", "[", "]", ";", ",", "@"};
-
-		bool isAKeyWord(const string& identifier); // Work on later, function to check if the indentifier is inside keywords 
-
-	ifstream SourceFile;
+bool Lexer::openFile(const string& filename) {
+	if (SourceFile.is_open()) {
+		SourceFile.close();
+	}
+	SourceFile.open(filename);
+	return SourceFile.is_open();
 };
 
-#endif 
+void Lexer::closeFile() {
+	if (SourceFile.is_open()) {
+		SourceFile.close();
+	}
+};
+
+bool Lexer::isAKeyWord(const string& identifier) { // This function will check if the identifier is inside the keywords vector
+	for (const auto& keyword : Keywords) {
+		if (identifier == keyword) {
+			return true;
+		}
+	}
+	return false;
+};
+
+int Identifier_char_col(char c) {
+	if (isalpha(c)) {
+		return 3; // Column 1 for letters
+	}
+	else if (isdigit(c)) {
+		return 4; // Column 2 for digits
+	}
+	else if (c == '_') {
+		return 5; // Column 3 for underscore
+	}
+	else {
+		return 6; // Invalid character
+	}
+}
+
+Token IdentifierDFSM(const string& input) { // This function will use the DFSM for L(L| D | '_')* // First design of DFSM for identifiers
+	int array[6][3] = {
+	{ 2,6,6 },
+	{ 3,4,5 },
+	{ 3,4,5 },
+	{ 3,4,5 },
+	{ 3,4,5 },
+	{ 6,6,6 },};
+
+	int current_state = 1;
+	const int AcceptingStates[4] = {2, 3, 4, 5};
+	for (int i = 1; i < input.length(); ++i) { // Main Loop
+		if (isdigit(input[0])) {
+			current_state = 6; // Invalid state if the first character is a digit
+			break;
+		}
+		int column = Identifier_char_col(input[i]);
+		current_state = array[current_state][column];
+
+		if (current_state == 6) {
+			break;}	
+	} // Need to an a check if the token is part of keyword
+
+	bool isAcceptingState = (current_state >= 2 && current_state <= 5);
+
+	if (isAcceptingState) {
+		Token token;
+		token.TokenType = "Identifier";
+		token.lexeme = input;
+		return token;
+	}
+	else {
+		Token token;
+		token.TokenType = "Invalid"; // Invalid Token
+		token.lexeme = input;
+		return token;
+	}
+};
+
+int Int_char_col(char c) {
+	if (isdigit(c)) {
+		return 2; // Column 2 for digits
+	}
+	else {
+		return -1; // Invalid character
+	}
+}
+
+Token IntDFSM(const string& input) { // This function will use the DFSM for d+
+	int states_array[2][1] = {
+	{2},
+	{2},
+	};
+	int InitialState = 1, AcceptingState = 2;
+	bool isAcceptingState = false;
+	for (int i = 1; i < input.length(); ++i) { // Main Loop
+
+		int column = Int_char_col(input[i]);
+		int state = states_array[InitialState][column];
+		if (state == 6) {
+			isAcceptingState = false;
+		}
+		else { isAcceptingState = true; }
+	}
+	if (isAcceptingState) {
+		Token token;
+		token.TokenType = "Integer";
+		token.lexeme = input;
+		return token;
+	}
+	else {
+		Token token;
+		token.TokenType = "Invalid"; // Invalid Token
+		token.lexeme = input;
+		return token;
+	}
+}
+
+int RealNum_char_col(char c) {
+	if (isdigit(c)) {
+		return 2; // Column 2 for digits
+	}
+	else if (c == '.') {
+		return 3; // Column 3 for decimal point
+	}
+	else {
+		return 5; // Invalid character
+	}
+}
+
+Token RealNumDFSM(const string& input) { // This function will use the DFSM for d+.d+
+	int state_array[5][2] = {
+		{2,3},
+		{2,3},
+		{4,5},
+		{4,5},
+		{5,5},},
+		AcceptingState = 4, IntitialState = 1;\
+	bool isAcceptingState = false;
+	for (int i = 1; i < input.length(); ++i) { // Main Loop
+
+		int column = RealNum_char_col(input[i]);
+		int state = state_array[IntitialState][column];
+		if (state == 5) {
+			isAcceptingState = false;
+		}
+		else { isAcceptingState = true; }
+	}
+	if (isAcceptingState) {
+		Token token;
+		token.TokenType = "RealNumber";
+		token.lexeme = input;
+		return token;
+	}
+	else {
+		Token token;
+		token.TokenType = "Invalid"; // Invalid Token
+		token.lexeme = input;
+		return token;
+	}
+}
+
+vector<Token> Lexer::lex() {
+	vector<Token> tokens;
+
+	return tokens;
+};
