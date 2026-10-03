@@ -145,9 +145,9 @@ Token RealNumDFSM(const string& input) { // This function will use the DFSM for 
 	int state_array[5][2] = {
 		{2,3}, // 0 = state 1, 1 = state 2, 2 = state 3, 3 = state 4, 4 = state 5
 		{2,3},
-		{3,5},
 		{4,5},
-		{5,5},}, AcceptingState = 2, CurrentState = 0;
+		{4,5},
+		{5,5},}, AcceptingState = 3, CurrentState = 0;
 	for (int i = 0; i < input.length(); ++i) { // Main Loop
 
 		int column = RealNum_char_col(input[i]);
@@ -211,7 +211,7 @@ vector<Token> Lexer::lex() {
 				continue;
 			}
 		}
-
+		// Identifier Handling and Keyword Handling
 		if (isalpha(static_cast<unsigned char>(c))) { //checks for alphabet characters
 			string word = "";
 			while (true) {
@@ -238,33 +238,49 @@ vector<Token> Lexer::lex() {
 			continue;
 		}
 
-
+		// Int and Real Number Handling
 		if (isdigit(static_cast<unsigned char>(c)) || c == '.') { // checks for real number
 			string number = "";
 			bool isReal = false;
 
-			while (isdigit(SourceFile.peek())) {
-				number += static_cast<char>(SourceFile.get());
-			}
-
-			if (SourceFile.peek() == '.') {
+			// Check for if the number starts with a dot
+			if (c == '.') {
 				SourceFile.get();
-				if (isdigit(SourceFile.peek())) {
+
+				if (SourceFile.peek() != EOF && isdigit(static_cast<unsigned char>(SourceFile.peek()))) {
 					isReal = true;
 					number += '.';
-					while (isdigit(SourceFile.peek())) {
+					while (SourceFile.peek() != EOF && isdigit(static_cast<unsigned char>(SourceFile.peek()))) {
 						number += static_cast<char>(SourceFile.get());
 					}
 				}
-				else if (number.empty()) {
-					isReal = true;
-					number = ".";
-				}
 				else {
-					SourceFile.unget();
+					// should be an invalid token since it's just one dot
+					Token token;
+					token.TokenType = "invalid";
+					token.lexeme = ".";
+					tokens.push_back(token);
+					continue;
 				}
 			}
-
+			else { // Checks if it Starts with a digit
+				while (SourceFile.peek() != EOF && isdigit(static_cast<unsigned char>(SourceFile.peek()))) {
+					number += static_cast<char>(SourceFile.get());
+				}
+				if (SourceFile.peek() == '.') {
+					SourceFile.get(); // Consume '.'
+					if (SourceFile.peek() != EOF && isdigit(static_cast<unsigned char>(SourceFile.peek()))) {
+						isReal = true;
+						number += '.';
+						while (SourceFile.peek() != EOF && isdigit(static_cast<unsigned char>(SourceFile.peek()))) {
+							number += static_cast<char>(SourceFile.get());
+						}
+					}
+					else {
+						SourceFile.unget();
+					}
+				}
+			}
 			Token token;
 			if (isReal) {
 				token = RealNumDFSM(number);
@@ -281,8 +297,6 @@ vector<Token> Lexer::lex() {
 		token.TokenType = "";
 		token.lexeme = string(1, c);
 		tokens.push_back(token);
-
 	}
-
 	return tokens;
 };
