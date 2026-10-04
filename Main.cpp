@@ -4,17 +4,39 @@
 #include "Lexer.h"
 using namespace std;
 
-
 int main() {
-	cout << "Printing Tokens:" << endl;
+	cout << "Output files Generated: output1.txt, output2.txt, output3.txt" << endl;
+	// Create Lexer objects for each test case
 	Lexer Lexer1("TestCase1.txt");
+	Lexer Lexer2("TestCase2.txt");
+	Lexer Lexer3("TestCase3.txt");
+	// Create output files for each test case
+	ofstream outputFile1("output1.txt");
+	ofstream outputFile2("output2.txt");
+	ofstream outputFile3("output3.txt");
 
+	// Write the output to the files
+	outputFile1 << "Output for TestCase1.txt: " << endl;
+	outputFile1 << "Token Type     Lexeme" << endl;
 	vector<Token> Tokens = Lexer1.lex();
 	for (const auto& token : Tokens) {
-		cout << "Token Type: " << token.TokenType << " Lexeme: " << token.lexeme << endl;
+		outputFile1 << token.TokenType << "     " << token.lexeme << endl;
 	}
-}
+	outputFile1.close();
 
-/*
- Current Test: while (fahr <= upper) a = 23.00; ! this is a sample !
-*/
+	outputFile2 << "Output for TestCase2.txt: " << endl;
+	outputFile2 << "Token Type     Lexeme" << endl;
+	Tokens = Lexer2.lex();
+	for (const auto& token : Tokens) {
+		outputFile2 << token.TokenType << "     " << token.lexeme << endl;
+	}
+	outputFile2.close();
+
+	outputFile3 << "Output for TestCase3.txt: " << endl;
+	outputFile3 << "Token Type     Lexeme" << endl;
+	Tokens = Lexer3.lex();
+	for (const auto& token : Tokens) {
+		outputFile3 << token.TokenType << "     " << token.lexeme << endl;
+	}
+	outputFile3.close();
+}

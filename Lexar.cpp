@@ -94,7 +94,7 @@ Token IdentifierDFSM(const string& input) { // This function will use the DFSM f
 	}
 	else {
 		Token token;
-		token.TokenType = "Invalid"; // Invalid Token
+		token.TokenType = "Invalid Token"; // Invalid Token
 		token.lexeme = input;
 		return token;
 	}
@@ -133,7 +133,7 @@ Token IntDFSM(const string& input) { // This function will use the DFSM for d+
 	}
 	else {
 		Token token;
-		token.TokenType = "Invalid"; // Invalid Token
+		token.TokenType = "Invalid Token"; // Invalid Token
 		token.lexeme = input;
 		return token;
 	}
@@ -165,18 +165,18 @@ Token RealNumDFSM(const string& input) { // This function will use the DFSM for 
 			CurrentState = 4; // Set to invalid state
 			break;
 		}
-		CurrentState = (state_array[CurrentState][column] - 1);
+		CurrentState = (state_array[CurrentState][column] - 1); // Update the current state based on the transition table
 	}
 	bool isAcceptingState = (CurrentState == AcceptingState);
 	if (isAcceptingState) {
 		Token token;
-		token.TokenType = "RealNumber";
+		token.TokenType = "Real";
 		token.lexeme = input;
 		return token;
 	}
 	else {
 		Token token;
-		token.TokenType = "Invalid"; // Invalid Token
+		token.TokenType = "Invalid Token"; // Invalid Token
 		token.lexeme = input;
 		return token;
 	}
@@ -202,7 +202,7 @@ vector<Token> Lexer::lex() {
 			continue;
 		}
 
-		if (c == '!') { //checks for comments
+		if (c == '!') { //checks for comments in order to igore them
 			SourceFile.get();
 			if (SourceFile.peek() == '=') {
 				SourceFile.unget();
@@ -222,25 +222,27 @@ vector<Token> Lexer::lex() {
 			}
 		}
 		// Identifier Handling and Keyword Handling
-		if (isalpha(static_cast<unsigned char>(c))) { //checks for alphabet characters
+		if (isalpha(static_cast<unsigned char>(c)) || c == '_') { // checks for alphabet characters or underscore
 			string word = "";
 			while (true) {
-				int n = SourceFile.peek();
-				if (n == EOF) {
+				int n = SourceFile.peek(); // Peek at the next character over without consuming it
+				if (n == EOF) { // If we reach the end of the file, break out of the loop
 					break;
 				}
-				unsigned char uc = static_cast<unsigned char>(n);
-				if (isalpha(uc) || isdigit(uc) || n == '_') {
-					word += static_cast<char>(SourceFile.get());
-				}
-				else {
+				char nc = static_cast<char>(n);
+
+				// Should stop reading when reaching whitespace, operators, or separators
+				string str(1, nc);
+				if (isspace(static_cast<unsigned char>(nc)) || isAOperator(str) || isSeparator(str)) {
 					break;
 				}
 
+				word += static_cast<char>(SourceFile.get()); // Consume the character and add it to the word
 			}
+
 			Token token = IdentifierDFSM(word);
 
-			if (isAKeyWord(word)) {
+			if (token.TokenType == "Identifier" && isAKeyWord(word)) { // If the token is an identifier and also a keyword, change its type to "Keyword"
 				token.TokenType = "Keyword";
 			}
 
@@ -249,68 +251,43 @@ vector<Token> Lexer::lex() {
 		}
 
 		// Int and Real Number Handling
-		if (isdigit(static_cast<unsigned char>(c)) || c == '.') { // checks for real number
+		if (isdigit(static_cast<unsigned char>(c)) || c == '.') { // checks for digits or decimal point
 			string number = "";
-			bool isReal = false;
 
-			// Check for if the number starts with a dot
-			if (c == '.') {
-				SourceFile.get();
+			while (true) {
+				int n = SourceFile.peek(); // Peek at the next character without consuming it
+				if (n == EOF) break; // If we reach the end of the file, break out of the loop
 
-				if (SourceFile.peek() != EOF && isdigit(static_cast<unsigned char>(SourceFile.peek()))) {
-					isReal = true;
-					number += '.';
-					while (SourceFile.peek() != EOF && isdigit(static_cast<unsigned char>(SourceFile.peek()))) {
-						number += static_cast<char>(SourceFile.get());
-					}
+				char nc = static_cast<char>(n); // Convert the peeked character to char
+				string str(1, nc); // Create a string from the character for operator and separator checks
+
+				// Stop consuming at whitespace, operators, or separators
+				if (isspace(static_cast<unsigned char>(nc)) || isAOperator(str) || isSeparator(str)) {
+					break;
 				}
-				else {
-					// should be an invalid token since it's just one dot
-					Token token;
-					token.TokenType = "invalid";
-					token.lexeme = ".";
-					tokens.push_back(token);
-					continue;
-				}
+
+				number += static_cast<char>(SourceFile.get()); // Consume the character and add it to the number string
 			}
-			else { // Checks if it Starts with a digit
-				while (SourceFile.peek() != EOF && isdigit(static_cast<unsigned char>(SourceFile.peek()))) {
-					number += static_cast<char>(SourceFile.get());
-				}
-				// This section is to check if input like 1.N is passed into real it will count it as invalid
-				if (SourceFile.peek() == '.') {
-					SourceFile.get();
-					isReal = true;
-					number += '.';
 
-						while (SourceFile.peek() != EOF) {
-							int n = SourceFile.peek();
-							unsigned char UC = static_cast<unsigned char>(n);
-							if (isalnum(UC) || n == '.') {
-								number += static_cast<char>(SourceFile.get());
-						} else {
-								break;
-					}
-					
-					}
-				}
-			}
 			Token token;
-			if (isReal) {
+			// if a dot is present, send it to the RealNumDFSM, otherwise send it to the IntDFSM
+			if (number.find('.') != string::npos) {
 				token = RealNumDFSM(number);
 			}
 			else {
 				token = IntDFSM(number);
 			}
+
 			tokens.push_back(token);
 			continue;
 		}
 		// Operator and Separator Checks
-		SourceFile.get();
-		string singleChar(1, c);
+		SourceFile.get(); // Consume the character since it's not part of an identifier or number
+		string singleChar(1, c); // Create a string for the single character operator or separator
 		int nextchar = SourceFile.peek();
-		if (nextchar != EOF) {
-			string doubleChar = singleChar + static_cast<char>(nextchar);
+		if (nextchar != EOF) { // Check for double character operators if it not the end of the file
+			string doubleChar = singleChar + static_cast<char>(nextchar); // Create a string for the double character operator
+			// Simple if statement to check if the double character operator is valid, if it is, consume the next character and add the token to the vector
 			if (isAOperator(doubleChar)) {
 				SourceFile.get();
 				Token token;
@@ -335,7 +312,7 @@ vector<Token> Lexer::lex() {
 			continue;
 		}
 		Token token;
-		token.TokenType = "Invalid";
+		token.TokenType = "Invalid Token";
 		token.lexeme = singleChar;
 		tokens.push_back(token);
 	}
