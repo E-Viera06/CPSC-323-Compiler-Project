@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include "Lexer.h"
+#include "RDP.h"
 using namespace std;
 
 int main() {
@@ -19,6 +20,8 @@ int main() {
 	outputFile1 << "Output for TestCase1.txt: " << endl;
 	outputFile1 << "Token Type     Lexeme" << endl;
 	vector<Token> Tokens = Lexer1.lex();
+	RDP Parser1(Tokens);
+	Parser1.parse();
 	for (const auto& token : Tokens) {
 		outputFile1 << token.TokenType << "     " << token.lexeme << endl;
 	}
