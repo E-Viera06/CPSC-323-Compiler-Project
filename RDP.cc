@@ -1,23 +1,23 @@
 #include "RDP.h"
 #include <iostream>
+#include <fstream>
 using namespace std;
-
-Token currentToken;
-size_t currentTokenindex = 0;
 
 void RDP::parse() {
 	if (!Tokens.empty()) {
+		currentTokenindex = 0;
 		currentToken = Tokens[0];
-		RAT26F(currentToken);
+		RAT26F();
 	}
 	else {
-		cout << "No tokens to parse" << endl;
+		outputFile << "No tokens to parse" << endl;
+		outputFile.close();
 	}
 };
 
-void DisplayCurrentToken() {
-	cout << "Token: " << currentToken.TokenType << "     Lexeme : " << currentToken.lexeme;
-	cout << endl;
+void RDP::DisplayCurrentToken() {
+	outputFile << "Token: " << currentToken.TokenType << "     Lexeme : " << currentToken.lexeme;
+	outputFile << endl;
 }
 
 void RDP::AdvanceToken() {
@@ -26,78 +26,78 @@ void RDP::AdvanceToken() {
 		currentTokenindex++;
 	}
 	else {
-		cout << "No more tokens to advance" << endl;
+		outputFile << "No more tokens to advance" << endl;
 	}
 };
 
 // R1 <Rat26F> -> <Opt Function Definitions>@ <Opt Declaration List> @ <Statement List>
-void RDP::RAT26F(const Token& token) {
+void RDP::RAT26F() {
 	DisplayCurrentToken();
 	if (switch_) {
-		cout << "<Rat26F> -> <Opt Function Definitions>@ <Opt Declaration List> @ <Statement List>" << endl;
+		outputFile << "<Rat26F> -> <Opt Function Definitions>@ <Opt Declaration List> @ <Statement List>" << endl;
 	}
-	OPTFunctionDef(token);
-	if (token.lexeme == "@") {
+	OPTFunctionDef();
+	if (currentToken.lexeme == "@") {
 		AdvanceToken();
-		OPTDeclarationsList(token);
-		if (token.lexeme == "@") {
+		OPTDeclarationsList();
+		if (currentToken.lexeme == "@") {
 			AdvanceToken();
-			// StatementList(token);
+			// StatementList();
 		}
 	}
 };
 
 // R2 <Opt Function Definitions> -> <Function Definitions> | <Empty>
-void RDP::OPTFunctionDef(const Token& token) {
+void RDP::OPTFunctionDef() {
 	DisplayCurrentToken();
 	if (switch_) {
-		cout << "<Function Definitions> | <Empty>" << endl;
+		outputFile << "<Function Definitions> | <Empty>" << endl;
 	}
-	if (token.lexeme == "function") {
-		FunctionDef(token);
+	if (currentToken.lexeme == "function") {
+		FunctionDef();
 	}
 	else {
 	}
 };
 
 // R3 <Function Definitions> -> <Function> <Function Definitions>
-void RDP::FunctionDef(const Token& token) {
+void RDP::FunctionDef() {
 	if (switch_) {
-		cout << "<Function> | <Function> <Function Definitions>" << endl;
+		outputFile << "<Function> | <Function> <Function Definitions>" << endl;
 	}
-	Function(token);
-	FunctionDefPrime(token);
+	Function();
+	FunctionDefPrime();
 };
 
 // R3' <Function Definitions Prime> -> <Function Definitions> 
-void RDP::FunctionDefPrime(const Token& token) {
-	if (token.lexeme == "function") {
+void RDP::FunctionDefPrime() {
+	if (currentToken.lexeme == "function") {
 		if (switch_) {
 			DisplayCurrentToken();
-			cout << "<Function Definitions Prime> -> <Function Definitions>" << endl;
+			outputFile << "<Function Definitions Prime> -> <Function Definitions>" << endl;
 		}
-		FunctionDef(token);
+		FunctionDef();
 	}
 };
 
 // R4 <Function> -> function <Identifier> ( <Opt Parameter List> ) <Opt Declaration List> <Body>
-void RDP::Function(const Token& token) {
+void RDP::Function() {
 	if (switch_) {
-		cout << "<Function> -> function <Identifier> ( <Opt Parameter List> )" << endl;
+		outputFile << "<Function> -> function <Identifier> ( <Opt Parameter List> )" << endl;
 	}
-	if (token.lexeme == "function") {
+	if (currentToken.lexeme == "function") {
 		AdvanceToken();
 		DisplayCurrentToken();
-		if (token.TokenType == "Identifier") {
+		if (currentToken.TokenType == "Identifier") {
 			AdvanceToken();
 			DisplayCurrentToken();
-			if (token.lexeme == "(") {
+			if (currentToken.lexeme == "(") {
 				AdvanceToken();
-				OPTParameterList(token);
-				if (token.lexeme == ")") {
+				OPTParameterList();
+				if (currentToken.lexeme == ")") {
 					AdvanceToken();
-					OPTDeclarationsList(token);
-					Body(token);
+					OPTDeclarationsList();
+					Body();
 				}
 				else {
 					// Invalid function
@@ -113,52 +113,52 @@ void RDP::Function(const Token& token) {
 	}
 };
 // R5. <Opt Parameter List> -> <Parameter List> | <Empty>
-void RDP::OPTParameterList(const Token& token) {
+void RDP::OPTParameterList() {
 	if (switch_) {
-		cout << "<Opt Parameter List> -> <Parameter List> | <Empty>" << endl;
+		outputFile << "<Opt Parameter List> -> <Parameter List> | <Empty>" << endl;
 	}
-	if (token.TokenType == "Identifier") {
-		ParameterList(token);
+	if (currentToken.TokenType == "Identifier") {
+		ParameterList();
 	}
 };
 
 // R6. <Parameter List> -> <Parameter> , <Parameter List>
-void RDP::ParameterList(const Token& token) {
+void RDP::ParameterList() {
 	if (switch_) {
-		cout << "<Parameter List> -> <Parameter> , <Parameter List>" << endl;
+		outputFile << "<Parameter List> -> <Parameter> , <Parameter List>" << endl;
 	}
-	Parameter(token);
-	ParameterListPrime(token);
+	Parameter();
+	ParameterListPrime();
 };
 
 // R6' <Parameter List Prime> -> <Parameter List>
-void RDP::ParameterListPrime(const Token& token) {
+void RDP::ParameterListPrime() {
 	DisplayCurrentToken();
 	if (switch_) {
-		cout << "<Parameter List Prime> -> <Parameter List>" << endl;
+		outputFile << "<Parameter List Prime> -> <Parameter List>" << endl;
 	}
-	if (token.lexeme == ",") {
+	if (currentToken.lexeme == ",") {
 		AdvanceToken();
-		ParameterList(token);
+		ParameterList();
 	}
 };
 // R7. <Parameter> -> <IDs > <Qualifier>
-void RDP::Parameter(const Token& token) {
+void RDP::Parameter() {
 	DisplayCurrentToken();
 	if (switch_) {
-		cout << "<Parameter> -> <IDs > <Qualifier>" << endl;
+		outputFile << "<Parameter> -> <IDs > <Qualifier>" << endl;
 	}
-	IDs(token);
-	Qualifier(token);
+	IDs();
+	Qualifier();
 };
 
 // R8. <Qualifier> -> integer | boolean | real
-void RDP::Qualifier(const Token& token) {
+void RDP::Qualifier() {
 	DisplayCurrentToken();
 	if (switch_) {
-		cout << "<Qualifier> -> integer | boolean | real" << endl;
+		outputFile << "<Qualifier> -> integer | boolean | real" << endl;
 	}
-	if (token.lexeme == "integer" || token.lexeme == "boolean" || token.lexeme == "real") {
+	if (currentToken.lexeme == "integer" || currentToken.lexeme == "boolean" || currentToken.lexeme == "real") {
 		AdvanceToken();
 	}
 	else {
@@ -167,14 +167,14 @@ void RDP::Qualifier(const Token& token) {
 };
 
 // R9. <Body> -> { < Statement List> }
-void RDP::Body(const Token& token) {
+void RDP::Body() {
 	if (switch_) {
-		cout << "<Body> -> { < Statement List> }" << endl;
+		outputFile << "<Body> -> { < Statement List> }" << endl;
 	}
-	if (token.lexeme == "{") {
+	if (currentToken.lexeme == "{") {
 		AdvanceToken();
-		//StatementList(token);
-		if (token.lexeme == "}") {
+		//StatementList();
+		if (currentToken.lexeme == "}") {
 			DisplayCurrentToken();
 			AdvanceToken();
 		}
@@ -188,26 +188,26 @@ void RDP::Body(const Token& token) {
 };
 
 // R10. <Opt Declaration List> -> <Declaration List> | <Empty>
-void RDP::OPTDeclarationsList(const Token& token) {
+void RDP::OPTDeclarationsList() {
 	DisplayCurrentToken();
 	if (switch_) {
-		cout << "<Opt Declaration List> -> <Declaration List> | <Empty>" << endl;
+		outputFile << "<Opt Declaration List> -> <Declaration List> | <Empty>" << endl;
 	}
-	if (token.lexeme == "integer" || token.lexeme == "boolean" || token.lexeme == "real") {
-		DeclarationsList(token);
+	if (currentToken.lexeme == "integer" || currentToken.lexeme == "boolean" || currentToken.lexeme == "real") {
+		DeclarationsList();
 	}
 };
 
 // R11. <Declaration List> -> <<Declaration>; <Declaration List>
-void RDP::DeclarationsList(const Token& token) {
+void RDP::DeclarationsList() {
 	DisplayCurrentToken();
 	if (switch_) {
-		cout << "<Declaration List> -> <Declaration>; | <Declaration>; <Declaration List>" << endl;
+		outputFile << "<Declaration List> -> <Declaration>; | <Declaration>; <Declaration List>" << endl;
 	}
-	Declaration(token);
-	if (token.lexeme == ";") {
+	Declaration();
+	if (currentToken.lexeme == ";") {
 		AdvanceToken();
-		DeclarationsListPrime(token);
+		DeclarationsListPrime();
 	}
 	else {
 		// Invalid declaration list
@@ -215,47 +215,47 @@ void RDP::DeclarationsList(const Token& token) {
 };
 
 // 11' <Declaration List Prime> -> <Declaration List>
-void RDP::DeclarationsListPrime(const Token& token) {
+void RDP::DeclarationsListPrime() {
 	DisplayCurrentToken();
 	if (switch_) {
-		cout << "<Declaration List Prime> -> <Declaration List>" << endl;
+		outputFile << "<Declaration List Prime> -> <Declaration List>" << endl;
 	}
-	if (token.lexeme == "integer" || token.lexeme == "boolean" || token.lexeme == "real") {
-		DeclarationsList(token);
+	if (currentToken.lexeme == "integer" || currentToken.lexeme == "boolean" || currentToken.lexeme == "real") {
+		DeclarationsList();
 	}
 };
 
 // R12. <Declaration> -> <Qualifier > <IDs>
-void RDP::Declaration(const Token& token) {
+void RDP::Declaration() {
 	DisplayCurrentToken();
 	if (switch_) {
-		cout << "<Declaration> -> <Qualifier > <IDs>" << endl;
+		outputFile << "<Declaration> -> <Qualifier > <IDs>" << endl;
 	}
-	Qualifier(token);
-	IDs(token);
+	Qualifier();
+	IDs();
 };
 
 // R13. <IDs> :: = <Identifier> 
-void RDP::IDs(const Token& token) {
+void RDP::IDs() {
 	if (switch_) {
-		cout << "<IDs> -> <Identifier> | <Identifier>, <IDs>" << endl;
+		outputFile << "<IDs> -> <Identifier> | <Identifier>, <IDs>" << endl;
 	}
-	if (token.TokenType == "Identifier") {
+	if (currentToken.TokenType == "Identifier") {
 		AdvanceToken();
-		IDsPrime(token);
+		IDsPrime();
 	}
 	else {
 		// Invalid IDs
 	}
 };
 // 13' <IDs Prime> -> , <IDs>
-void RDP::IDsPrime(const Token& token) {
-	if (token.lexeme == ",") {
+void RDP::IDsPrime() {
+	if (currentToken.lexeme == ",") {
 		DisplayCurrentToken();
 		if (switch_) {
-			cout << "<IDs Prime> -> , <IDs>" << endl;
+			outputFile << "<IDs Prime> -> , <IDs>" << endl;
 		}
 		AdvanceToken();
-		IDs(currentToken);
+		IDs();
 	}
 }

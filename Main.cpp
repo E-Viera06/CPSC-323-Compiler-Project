@@ -19,27 +19,13 @@ int main() {
 	// Write the output to the files
 	outputFile1 << "Output for TestCase1.txt: " << endl;
 	outputFile1 << "Token Type     Lexeme" << endl;
+
 	vector<Token> Tokens = Lexer1.lex();
-	RDP Parser1(Tokens);
+	vector<Token> Tokens2 = Lexer2.lex();
+	vector<Token> Tokens3 = Lexer3.lex();
+
+	RDP Parser1(Tokens, "output1.txt");
 	Parser1.parse();
-	for (const auto& token : Tokens) {
-		outputFile1 << token.TokenType << "     " << token.lexeme << endl;
-	}
-	outputFile1.close();
 
-	outputFile2 << "Output for TestCase2.txt: " << endl;
-	outputFile2 << "Token Type     Lexeme" << endl;
-	Tokens = Lexer2.lex();
-	for (const auto& token : Tokens) {
-		outputFile2 << token.TokenType << "     " << token.lexeme << endl;
-	}
-	outputFile2.close();
-
-	outputFile3 << "Output for TestCase3.txt: " << endl;
-	outputFile3 << "Token Type     Lexeme" << endl;
-	Tokens = Lexer3.lex();
-	for (const auto& token : Tokens) {
-		outputFile3 << token.TokenType << "     " << token.lexeme << endl;
-	}
-	outputFile3.close();
+	
 }
