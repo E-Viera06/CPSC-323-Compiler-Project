@@ -1,27 +1,39 @@
-! Test Program !
+! Test Program with Functions, Declarations, and Statements !
+
+function computeResult(x integer)
+{
+    return x * 2;
+}
+
+@
+! Declaration Section !
+integer a, b, BankAcc_1, BankAcc_2, Two_;
+real ratio;
+boolean CorrectResult, correctResult;
+
+@
+! Statement Section !
 a = 2.00;
 b = 3.00;
 while (a < 10.00) {
-	a = a + b;
-	b = b + 1.00; 
-	! This is a comment inside the while loop!
+    a = a + b;
+    b = b + 1.00; 
+    ! This is a comment inside the while loop !
 }
 
 BankAcc_1 = 1000.00;
 BankAcc_2 = 2000.00;
 
 if (BankAcc_1 > BankAcc_2) {
-	BankAcc_1 = BankAcc_1 - 100.00;
-	BankAcc_2 = BankAcc_2 + 100.00;
+    BankAcc_1 = BankAcc_1 - 100.00;
+    BankAcc_2 = BankAcc_2 + 100.00;
 } else {
-	BankAcc_1 = BankAcc_1 + 100.00;
-	BankAcc_2 = BankAcc_2 - 100.00;
+    BankAcc_1 = BankAcc_1 + 100.00;
+    BankAcc_2 = BankAcc_2 - 100.00;
 }
 
-_Two = 2.b0; !this shouldn't be a valid variable name and real!
-Two_ = 2; !this should be a valid variable name!
-
+Two_ = 2; 
 CorrectResult = false;
 if (Two_ * 2 == 4) {
-   correctResult = true;
+    correctResult = true;
 }

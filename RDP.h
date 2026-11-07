@@ -17,6 +17,7 @@ public:
 	void parse(); // This will be the main function of this class
 	void AdvanceToken(); // This will be used to advance the token in the vector of tokens
 	void DisplayCurrentToken();
+
 	// Rules of the grammer here 
 	void RAT26F();
 	void OPTFunctionDef();
@@ -36,7 +37,16 @@ public:
 	void IDs();
 	void IDsPrime();
 
+	// R14 - R22 put it here
 
+	void Condition();
+	void Relop();
+ 	void Expression();
+ 	void ExpressionPrime();
+ 	void Term();
+	void TermPrime();
+ 	void Factor();
+ 	void Primary();
 
 private:
 	ofstream outputFile; // This will be used to write the output to a file

@@ -258,4 +258,199 @@ void RDP::IDsPrime() {
 		AdvanceToken();
 		IDs();
 	}
+};
+
+
+/*
+
+
+[Put R14 - R22 here]
+
+
+
+*/
+
+
+// R23. <Condition> -> <Expression> <Relop> <Expression>
+void RDP::Condition() {
+    if (switch_) {
+        outputFile << "<Condition> -> <Expression> <Relop> <Expression>\n";
+    }
+    Expression();
+    Relop();
+    Expression();
 }
+
+// R24. <Relop> -> == | != | > | < | <= | >=
+void RDP::Relop() {
+
+    if (currentToken.lexeme == "==" || currentToken.lexeme == "!=" || currentToken.lexeme == ">" || currentToken.lexeme == "<" 
+													|| currentToken.lexeme == "<=" || currentToken.lexeme == ">=") {
+        if (switch_) {
+            outputFile << "<Relop> -> " << currentToken.lexeme << "\n";
+        }
+        DisplayCurrentToken();
+        AdvanceToken();
+    }
+    else {
+
+    }
+}
+
+// R25. <Expression> -> <Term> <Expression Prime>
+void RDP::Expression() {
+    if (switch_) {
+        outputFile << "<Expression> -> <Term> <Expression Prime>\n";
+    }
+    Term();
+    ExpressionPrime();
+}
+
+// R25' <Expression Prime> -> + <Term> <Expression Prime> | - <Term> <Expression Prime> | <Empty>
+void RDP::ExpressionPrime() {
+    if (currentToken.lexeme == "+") {
+        if (switch_) {
+            outputFile << "<Expression Prime> -> + <Term> <Expression Prime>\n";
+        }
+        DisplayCurrentToken();
+        AdvanceToken();
+        Term();
+        ExpressionPrime();
+    }
+    else if (currentToken.lexeme == "-") {
+        if (switch_) {
+            outputFile << "<Expression Prime> -> - <Term> <Expression Prime>\n";
+        }
+        DisplayCurrentToken();
+        AdvanceToken();
+        Term();
+        ExpressionPrime();
+    }
+    else {
+        if (switch_) {
+            outputFile << "<Expression Prime> -> <Empty>\n";
+        }
+    }
+};
+
+// R26. <Term> -> <Factor> <Term Prime>
+void RDP::Term() {
+    DisplayCurrentToken();
+    if (switch_) {
+        outputFile << "<Term> -> <Factor> <Term Prime>" << endl;
+    }
+    Factor();
+    TermPrime();
+};
+
+// R26'. <Term Prime> -> * <Factor> <Term Prime> | / <Factor> <Term Prime> | <Empty>
+void RDP::TermPrime() {
+    if (currentToken.lexeme == "*") {
+        DisplayCurrentToken();
+        if (switch_) {
+            outputFile << "<Term Prime> -> * <Factor> <Term Prime>" << endl;
+        }
+        AdvanceToken();
+        Factor();
+        TermPrime();
+    }
+    else if (currentToken.lexeme == "/") {
+        DisplayCurrentToken();
+        if (switch_) {
+            outputFile << "<Term Prime> -> / <Factor> <Term Prime>" << endl;
+        }
+        AdvanceToken();
+        Factor();
+        TermPrime();
+    }
+};
+
+// R27. <Factor> -> - <Primary> | <Primary>
+void RDP::Factor() {
+    if (currentToken.lexeme == "-") {
+        DisplayCurrentToken();
+        if (switch_) {
+            outputFile << "<Factor> -> - <Primary>" << endl;
+        }
+        AdvanceToken();
+        Primary();
+    }
+    else {
+        DisplayCurrentToken();
+        if (switch_) {
+            outputFile << "<Factor> -> <Primary>" << endl;
+        }
+        Primary();
+    }
+};
+
+// R28. <Primary> -> <Identifier> | <Integer> | <Identifier> ( <IDs> ) | ( <Expression> ) | <Real> | true | false
+void RDP::Primary() {
+    if (currentToken.TokenType == "Identifier") {
+        DisplayCurrentToken();
+        AdvanceToken();
+
+        // Check if this identifier is followed by '(' for a function/procedure call
+        if (currentToken.lexeme == "(") {
+            if (switch_) {
+                outputFile << "<Primary> -> <Identifier> ( <IDs> )" << endl;
+            }
+            DisplayCurrentToken();
+            AdvanceToken();
+
+            IDs();
+
+            if (currentToken.lexeme == ")") {
+                DisplayCurrentToken();
+                AdvanceToken();
+            }
+            else {
+
+            }
+        }
+        else {
+            if (switch_) {
+                outputFile << "<Primary> -> <Identifier>" << endl;
+            }
+        }
+    }
+    else if (currentToken.TokenType == "Integer") {
+        DisplayCurrentToken();
+        if (switch_) {
+            outputFile << "<Primary> -> <Integer>" << endl;
+        }
+        AdvanceToken();
+    }
+    else if (currentToken.TokenType == "Real") {
+        DisplayCurrentToken();
+        if (switch_) {
+            outputFile << "<Primary> -> <Real>" << endl;
+        }
+        AdvanceToken();
+    }
+    else if (currentToken.lexeme == "(") {
+        DisplayCurrentToken();
+        if (switch_) {
+            outputFile << "<Primary> -> ( <Expression> )" << endl;
+        }
+        AdvanceToken();
+
+        Expression();
+
+        if (currentToken.lexeme == ")") {
+            DisplayCurrentToken();
+            AdvanceToken();
+        }
+        else {
+        }
+    }
+    else if (currentToken.lexeme == "true" || currentToken.lexeme == "false") {
+        DisplayCurrentToken();
+        if (switch_) {
+            outputFile << "<Primary> -> " << currentToken.lexeme << endl;
+        }
+        AdvanceToken();
+    }
+    else {
+    }
+};

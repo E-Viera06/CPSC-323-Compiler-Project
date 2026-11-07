@@ -1,12 +1,18 @@
-!Test Number 2 this one will check for int, real, operator, and separator!
-( 1 + 2.5 ) * 3 - 4 / 5
-( 1. == 1.0)
-( 1.0 != 2.0)
-( 3.14 >= 3.14)
-( 2.71 <= 3.14)
-( 2.b > 1.0)
-( 1.0 < 2.1231242124)
-{}
+! this is comment for this sample code which
+converts Fahrenheit into Celcius !
+
+function convert (fahr integer)
+{
+    return 5 * (fahr -32) / 9;
+}
+
 @
-{1,2,3}
-{1.00, 2.00,3.00}
+  integer low, high, step; !declarations!
+@
+
+  get (low, high, step);
+  while (low <= high )
+    { put (low);
+      put (convert (low));
+      low = low + step;
+    }

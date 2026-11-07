@@ -16,16 +16,20 @@ int main() {
 	ofstream outputFile2("output2.txt");
 	ofstream outputFile3("output3.txt");
 
-	// Write the output to the files
+	// Output file prep
 	outputFile1 << "Output for TestCase1.txt: " << endl;
-	outputFile1 << "Token Type     Lexeme" << endl;
+	outputFile2 << "Output for TestCase2.txt: " << endl;
+	outputFile3 << "Output for TestCase3.txt: " << endl;
 
 	vector<Token> Tokens = Lexer1.lex();
 	vector<Token> Tokens2 = Lexer2.lex();
 	vector<Token> Tokens3 = Lexer3.lex();
 
 	RDP Parser1(Tokens, "output1.txt");
-	Parser1.parse();
+	RDP Parser2(Tokens2, "output2.txt");
+	RDP Parser3(Tokens3, "output3.txt");
 
-	
+	Parser1.parse();
+	Parser2.parse();
+	Parser3.parse();
 }
