@@ -260,16 +260,331 @@ void RDP::IDsPrime() {
 	}
 };
 
-
-/*
-
-
-[Put R14 - R22 here]
-
-
-
-*/
-
+// R14. <Statement List> -> <Statement> <Statement List Prime>
+void RDP::StatementList() {
+	if (switch_) {
+		outputFile << "<Statement List> -> <Statement> <Statement List Prime>" << endl;
+	}
+	Statement();
+	StatementListPrime();
+};
+ 
+// R14' <Statement List Prime> -> <Statement List> | <Empty>
+void RDP::StatementListPrime() { 
+	if (currentToken.lexeme == "{" || currentToken.TokenType == "Identifier" || currentToken.lexeme == "if" || currentToken.lexeme == "return"
+		|| currentToken.lexeme == "put" || currentToken.lexeme == "get" || currentToken.lexeme == "while") {
+		if (switch_) {
+			outputFile << "<Statement List Prime> -> <Statement List>" << endl;
+		}
+		StatementList();
+	}
+	else {
+		if ( switch_) {
+			outputFile << "<Statement List Prime> -> <Empty>" << endl;
+		}
+	}
+};
+ 
+// R15. <Statement> -> <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>
+void RDP::Statement() {
+	if (currentToken.lexeme == "{") {
+		if (switch_) {
+			outputFile << "<Statement> -> <Compound>" << endl;
+		}
+		Compound();
+	}
+	else if (currentToken.TokenType == "Identifier") {
+		if (switch_) {
+			outputFile << "<Statement> -> <Assign>" << endl;
+		}
+		Assign();
+	}
+	else if (currentToken.lexeme == "if") {
+		if (switch_) {
+			outputFile << "<Statement> -> <If>" << endl;
+		}
+		If();
+	}
+	else if (currentToken.lexeme == "return") {
+		if (switch_) {
+			outputFile << "<Statement> -> <Return>" << endl;
+		}
+		Return();
+	}
+	else if (currentToken.lexeme == "put") {
+		if (switch_) {
+			outputFile << "<Statement> -> <Print>" << endl;
+		}
+		Print();
+	}
+	else if (currentToken.lexeme == "get") {
+		if (switch_) {
+			outputFile << "<Statement> -> <Scan>" << endl;
+		}
+		Scan();
+	}
+	else if (currentToken.lexeme == "while") {
+		if (switch_) {
+			outputFile << "<Statement> -> <While>" << endl;
+		}
+		While();
+	}
+	else {
+		// Invalid statement
+	}
+};
+ 
+// R16. <Compound> -> { <Statement List> }
+void RDP::Compound() {
+	if (switch_) {
+		outputFile << "<Compound> -> { <Statement List> }" << endl;
+	}
+	if (currentToken.lexeme == "{") {
+		DisplayCurrentToken();
+		AdvanceToken();
+		StatementList();
+		if (currentToken.lexeme == "}") {
+			DisplayCurrentToken();
+			AdvanceToken();
+		}
+		else {
+			// Invalid compound
+		}
+	}
+	else {
+		// Invalid compound
+	}
+};
+ 
+// R17. <Assign> -> <Identifier> = <Expression> ;
+void RDP::Assign() { 
+	if (switch_) {
+		outputFile << "<Assign> -> <Identifier> = <Expression> ;" << endl;
+	}
+	if (currentToken.TokenType == "Identifier") {
+		DisplayCurrentToken();
+		AdvanceToken();
+		if (currentToken.lexeme == "=") {
+			DisplayCurrentToken();
+			AdvanceToken();
+			Expression();
+			if (currentToken.lexeme == ";") {
+				DisplayCurrentToken();
+				AdvanceToken();
+			}
+			else {
+				// Invalid assign
+			}
+		}
+		else {
+			// Invalid assign
+		}
+	}
+	else {
+		// Invalid assign
+	}
+};
+ 
+// R18. <If> -> if ( <Condition> ) <Statement> <If Prime>
+void RDP::If() {
+	if (switch_) {
+		outputFile << "<If> -> if ( <Condition> ) <Statement> <If Prime>" << endl;
+	}
+	if (currentToken.lexeme == "if") {
+		DisplayCurrentToken();
+		AdvanceToken();
+		if (currentToken.lexeme == "(") {
+			DisplayCurrentToken();
+			AdvanceToken();
+			Condition();
+			if (currentToken.lexeme == ")") {
+				DisplayCurrentToken();
+				AdvanceToken();
+				Statement();
+				IfPrime();
+			}
+			else {
+				// Invalid if
+			}
+		}
+		else {
+			// Invalid if
+		}
+	}
+	else {
+		// Invalid if
+	}
+};
+ 
+// R18' <If Prime> -> fi | else <Statement> fi
+void RDP::IfPrime() {
+	if (currentToken.lexeme == "fi") {
+		DisplayCurrentToken();
+		if (switch_) {
+			outputFile << "<If Prime> -> fi" << endl;
+		}
+		AdvanceToken();
+	}
+	else if (currentToken.lexeme == "else") {
+		DisplayCurrentToken();
+		if (switch_) {
+			outputFile << "<If Prime> -> else <Statement> fi" << endl;
+		}
+		AdvanceToken();
+		Statement();
+		if (currentToken.lexeme == "fi") {
+			DisplayCurrentToken();
+			AdvanceToken();
+		}
+		else {
+			// Invalid if
+		}
+	}
+	else {
+		// Invalid if
+	}
+};
+ 
+// R19. <Return> -> return <Return Prime>
+void RDP::Return() {
+	if (switch_) {
+		outputFile << "<Return> -> return <Return Prime>" << endl;
+	}
+	if (currentToken.lexeme == "return") {
+		DisplayCurrentToken();
+		AdvanceToken();
+		ReturnPrime();
+	}
+	else {
+		// Invalid return
+	}
+};
+ 
+// R19' <Return Prime> -> ; | <Expression> ;
+void RDP::ReturnPrime() { 
+	if (currentToken.lexeme == ";") { 
+		DisplayCurrentToken();
+		if (switch_) {
+			outputFile << "<Return Prime> -> ;" << endl;
+		}
+		AdvanceToken();
+	}
+	else {
+		if (switch_) {
+			outputFile << "<Return Prime> -> <Expression> ;" << endl;
+		}
+		Expression();
+		if (currentToken.lexeme == ";") {
+			DisplayCurrentToken();
+			AdvanceToken();
+		}
+		else {
+			// Invalid return
+		}
+	}
+};
+ 
+// R20. <Print> -> put ( <Expression> ) ;
+void RDP::Print() {
+	if (switch_) {
+		outputFile << "<Print> -> put ( <Expression> ) ;" << endl;
+	}
+	if (currentToken.lexeme == "put") {
+		DisplayCurrentToken();
+		AdvanceToken();
+		if (currentToken.lexeme == "(") {
+			DisplayCurrentToken();
+			AdvanceToken();
+			Expression();
+			if (currentToken.lexeme == ")") {
+				DisplayCurrentToken();
+				AdvanceToken();
+				if (currentToken.lexeme == ";") {
+					DisplayCurrentToken();
+					AdvanceToken();
+				}
+				else {
+					// Invalid print
+				}
+			}
+			else {
+				// Invalid print
+			}
+		}
+		else {
+			// Invalid print
+		}
+	}
+	else {
+		// Invalid print
+	}
+};
+ 
+// R21. <Scan> -> get ( <IDs> ) ;
+void RDP::Scan() {
+	if (switch_) {
+		outputFile << "<Scan> -> get ( <IDs> ) ;" << endl;
+	}
+	if (currentToken.lexeme == "get") {
+		DisplayCurrentToken();
+		AdvanceToken();
+		if (currentToken.lexeme == "(") {
+			DisplayCurrentToken();
+			AdvanceToken();
+			IDs();
+			if (currentToken.lexeme == ")") {
+				DisplayCurrentToken();
+				AdvanceToken();
+				if (currentToken.lexeme == ";") {
+					DisplayCurrentToken();
+					AdvanceToken();
+				}
+				else {
+					// Invalid scan
+				}
+			}
+			else {
+				// Invalid scan
+			}
+		}
+		else {
+			// Invalid scan
+		}
+	}
+	else {
+		// Invalid scan
+	}
+};
+ 
+// R22. <While> -> while ( <Condition> ) <Statement> 
+void RDP::While() {
+	if (switch_) {
+		outputFile << "<While> -> while ( <Condition> ) <Statement>" << endl;
+	}
+	if (currentToken.lexeme == "while") { 
+		DisplayCurrentToken();
+		AdvanceToken();
+		if (currentToken.lexeme == "(") {
+			DisplayCurrentToken();
+			AdvanceToken();
+			Condition();
+			if (currentToken.lexeme == ")") { 
+				DisplayCurrentToken();
+				AdvanceToken();
+				Statement();
+			}
+			else {
+				// Invalid while
+			}
+		}
+		else {
+			// Invalid while
+		}
+	}
+	else {
+		// Invalid while
+	}
+};
 
 // R23. <Condition> -> <Expression> <Relop> <Expression>
 void RDP::Condition() {

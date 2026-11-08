@@ -36,9 +36,18 @@ public:
 	void Declaration();
 	void IDs();
 	void IDsPrime();
-
-	// R14 - R22 put it here
-
+	void StatementList();
+	void StatementListPrime();
+	void Statement();
+	void Compound();
+	void Assign();
+	void If();
+	void IfPrime();
+	void Return();
+	void ReturnPrime();
+	void Print();
+	void Scan();
+	void While();
 	void Condition();
 	void Relop();
  	void Expression();
