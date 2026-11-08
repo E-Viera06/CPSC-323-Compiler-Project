@@ -16,7 +16,7 @@ void RDP::parse() {
 };
 
 void RDP::DisplayCurrentToken() {
-	outputFile << "Token: " << currentToken.TokenType << "     Lexeme : " << currentToken.lexeme;
+	outputFile << "Token: " << currentToken.TokenType << "     Lexeme: " << currentToken.lexeme;
 	outputFile << endl;
 }
 
@@ -284,9 +284,7 @@ void RDP::StatementListPrime() {
 		StatementList();
 	}
 	else {
-		if ( switch_) {
-			outputFile << "<Statement List Prime> -> <Empty>" << endl;
-		}
+		// Empty
 	}
 };
  
@@ -601,7 +599,7 @@ void RDP::Relop() {
         AdvanceToken();
     }
     else {
-
+		ErrorMessage("Expected relational operator ==, !=, >, <, <=, >=");
     }
 }
 
@@ -636,7 +634,7 @@ void RDP::ExpressionPrime() {
     }
     else {
         if (switch_) {
-            outputFile << "<Expression Prime> -> <Empty>\n";
+            outputFile << "<Expression Prime> -> ε\n";
         }
     }
 };
@@ -670,7 +668,11 @@ void RDP::TermPrime() {
         AdvanceToken();
         Factor();
         TermPrime();
-    }
+    } else {
+		if (switch_) {
+			outputFile << "<Term Prime> -> ε" << endl;
+		}
+	}
 };
 
 // R27. <Factor> -> - <Primary> | <Primary>

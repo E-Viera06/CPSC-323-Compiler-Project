@@ -30,10 +30,10 @@ if (BankAcc_1 > BankAcc_2) {
 } else {
     BankAcc_1 = BankAcc_1 + 100.00;
     BankAcc_2 = BankAcc_2 - 100.00;
-}
+} fi
 
 Two_ = 2; 
 CorrectResult = false;
 if (Two_ * 2 == 4) {
     correctResult = true;
-}
+} fi

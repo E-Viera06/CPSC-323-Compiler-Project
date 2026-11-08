@@ -1,3 +1,9 @@
-function convert (a integer , b integer) {
- result = a+b
-}
+function addNums(a integer, b integer)
+{return a + b;}
+@
+integer num1, num2, total;
+@
+if (num1 < num2) {
+    total = addNums(num1, num2);
+} !This should generate a syntax error because it is missing fi!
+put(total);
