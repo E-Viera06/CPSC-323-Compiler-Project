@@ -30,6 +30,11 @@ void RDP::AdvanceToken() {
 	}
 };
 
+void RDP::ErrorMessage(string message){
+	outputFile << "SYNTAX ERROR: " << message << endl;
+	outputFile << "Invalid Token is " << currentToken.TokenType << " " << currentToken.lexeme << endl;
+}
+
 // R1 <Rat26F> -> <Opt Function Definitions>@ <Opt Declaration List> @ <Statement List>
 void RDP::RAT26F() {
 	DisplayCurrentToken();
@@ -42,7 +47,7 @@ void RDP::RAT26F() {
 		OPTDeclarationsList();
 		if (currentToken.lexeme == "@") {
 			AdvanceToken();
-			// StatementList();
+			StatementList();
 		}
 	}
 };
@@ -100,15 +105,15 @@ void RDP::Function() {
 					Body();
 				}
 				else {
-					// Invalid function
+					ErrorMessage("Expected ')'");
 				}
 			}
 			else {
-				// Invalid function
+				ErrorMessage("Expected '(' ");
 			}
 		}
 		else {
-			// Invalid function
+			ErrorMessage("Expected 'function'");
 		}
 	}
 };
@@ -162,7 +167,7 @@ void RDP::Qualifier() {
 		AdvanceToken();
 	}
 	else {
-		// Invalid qualifier
+		ErrorMessage("Expected type integer boolean or real");
 	}
 };
 
@@ -173,17 +178,17 @@ void RDP::Body() {
 	}
 	if (currentToken.lexeme == "{") {
 		AdvanceToken();
-		//StatementList();
+		StatementList();
 		if (currentToken.lexeme == "}") {
 			DisplayCurrentToken();
 			AdvanceToken();
 		}
 		else {
-			// Invalid body
+			ErrorMessage("Expected '{'");
 		}
 	}
 	else {
-		// Invalid body
+		ErrorMessage("Expected '{' ");
 	}
 };
 
@@ -210,7 +215,7 @@ void RDP::DeclarationsList() {
 		DeclarationsListPrime();
 	}
 	else {
-		// Invalid declaration list
+		ErrorMessage("Expected ';'");
 	}
 };
 
@@ -245,7 +250,7 @@ void RDP::IDs() {
 		IDsPrime();
 	}
 	else {
-		// Invalid IDs
+		ErrorMessage("Expected identifier in ID list");
 	}
 };
 // 13' <IDs Prime> -> , <IDs>
@@ -330,7 +335,7 @@ void RDP::Statement() {
 		While();
 	}
 	else {
-		// Invalid statement
+		ErrorMessage("Invalid statement start");
 	}
 };
  
@@ -348,11 +353,11 @@ void RDP::Compound() {
 			AdvanceToken();
 		}
 		else {
-			// Invalid compound
+			ErrorMessage("Expected '}'");
 		}
 	}
 	else {
-		// Invalid compound
+		ErrorMessage("Expected '{'");
 	}
 };
  
@@ -373,15 +378,15 @@ void RDP::Assign() {
 				AdvanceToken();
 			}
 			else {
-				// Invalid assign
+				ErrorMessage("Expected ';'");
 			}
 		}
 		else {
-			// Invalid assign
+			ErrorMessage("Expected '='");
 		}
 	}
 	else {
-		// Invalid assign
+		ErrorMessage("Expected identifier at start of assignment");
 	}
 };
  
@@ -404,15 +409,12 @@ void RDP::If() {
 				IfPrime();
 			}
 			else {
-				// Invalid if
+				ErrorMessage("Expected ')' after condition");
 			}
 		}
 		else {
-			// Invalid if
+			ErrorMessage("Expected '(' after 'if'");
 		}
-	}
-	else {
-		// Invalid if
 	}
 };
  
@@ -437,11 +439,11 @@ void RDP::IfPrime() {
 			AdvanceToken();
 		}
 		else {
-			// Invalid if
+			ErrorMessage("Expected 'fi' to close");
 		}
 	}
 	else {
-		// Invalid if
+		ErrorMessage("Expected 'fi' or 'else' in if statement");
 	}
 };
  
@@ -456,7 +458,7 @@ void RDP::Return() {
 		ReturnPrime();
 	}
 	else {
-		// Invalid return
+		ErrorMessage("Expected 'return'");
 	}
 };
  
@@ -479,7 +481,7 @@ void RDP::ReturnPrime() {
 			AdvanceToken();
 		}
 		else {
-			// Invalid return
+			ErrorMessage("Expected ';' after return");
 		}
 	}
 };
@@ -504,19 +506,16 @@ void RDP::Print() {
 					AdvanceToken();
 				}
 				else {
-					// Invalid print
+					ErrorMessage("Expected ';' after 'put'");
 				}
 			}
 			else {
-				// Invalid print
+				ErrorMessage("Expected ')' after put expression");
 			}
 		}
 		else {
-			// Invalid print
+			ErrorMessage("Expected '(' after 'put'");
 		}
-	}
-	else {
-		// Invalid print
 	}
 };
  
@@ -540,19 +539,16 @@ void RDP::Scan() {
 					AdvanceToken();
 				}
 				else {
-					// Invalid scan
+					ErrorMessage("Expected ';' after get statement");
 				}
 			}
 			else {
-				// Invalid scan
+				ErrorMessage("Expected ')' after <IDs>");
 			}
 		}
 		else {
-			// Invalid scan
+			ErrorMessage("Expected '(' after 'get'");
 		}
-	}
-	else {
-		// Invalid scan
 	}
 };
  
@@ -574,15 +570,12 @@ void RDP::While() {
 				Statement();
 			}
 			else {
-				// Invalid while
+				ErrorMessage("Expected ')' after while condition");
 			}
 		}
 		else {
-			// Invalid while
+			ErrorMessage("Expected '(' after 'while'");
 		}
-	}
-	else {
-		// Invalid while
 	}
 };
 
@@ -720,7 +713,7 @@ void RDP::Primary() {
                 AdvanceToken();
             }
             else {
-
+				ErrorMessage("Expected ')' in function arguments");
             }
         }
         else {
@@ -757,6 +750,7 @@ void RDP::Primary() {
             AdvanceToken();
         }
         else {
+			ErrorMessage("Expected ')' after expression");
         }
     }
     else if (currentToken.lexeme == "true" || currentToken.lexeme == "false") {
@@ -767,5 +761,6 @@ void RDP::Primary() {
         AdvanceToken();
     }
     else {
+		ErrorMessage("Unexpected token in primary");
     }
 };

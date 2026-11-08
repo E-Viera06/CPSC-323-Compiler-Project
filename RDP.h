@@ -58,6 +58,7 @@ public:
  	void Primary();
 
 private:
+	void ErrorMessage(string message);
 	ofstream outputFile; // This will be used to write the output to a file
 	bool switch_ = true; // This will be used to determine if the function definitions are present or not
 	vector<Token> Tokens;
